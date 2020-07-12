@@ -41,7 +41,34 @@ I was terrified at having to learn a "new way to write React components", but ho
  
  Do I regret not using state management at the time? Nope. In our bootcamp, we had literally just been introduced to the concept of Redux, and everyone in my group was still scratching their heads at that concept still. We had a lot on our plate at the time and I personally didn't want to further complicate the lives of everyone at the time. We were stressed 24/7 during the final project and the day we finished was a day that I still remember quite vividly. 
 
+```
+wss.on('connection', function connection(socket) {
+    console.log('new connection');
+    socket.send(JSON.stringify({
+        roomPin,
+        showHostButton,
+        showJoinButton
+    }))
+    // on new connection if db .length is greater than one needs to send a stringified version of db[db.length-1]
+    socket.on('message', async (data) => {   
+        const {drawData, name, gamePin, roomId, start, saveRoomId, answer, selectedAnswer, timerOn, showHost, kickUsers, showJoin, changeClass, toggleAnswers, endGame, resetGame, resetUserAnswer} = JSON.parse(data);
+        let {nextPlayer} =JSON.parse(data)
+```
+Web sockets. Oh web sockets. Looking at this code sample I can't help but thinking how much of a genius I felt like at the time. Everyone has their 400 IQ moments while Developing, and this was one of my 400 IQ moments. During the first couple of days of the project, we challenged each other to get something *working*. Anything working. We were all nervous and scared that our grand vision of a multiplayer game would fail. As an avid gamer and someone who loves taking on new challenges, I couldn't let the vision disappear. I had to find out a way to somehow get an individual client to transfer their drawing data over a server to another client. Simple enough right? It sounds like something that should be easily doable (and to be honest now I feel like this would be a cinch and something I wouldn't stress over). But wait.....did you say a drawing? As in mouse events that result in a canvas being populated with individual pixels and lines and strokes and colors? Yeah....that sounds....doable? Look! I was able to send over data! It worked.....wait why did it disappear? No! Come back please! The premise of a websocket is simple enough. Websockets are a protocol that allow for low latency communication between the client and the server. I knew that many multiplayer games utilized websockets for that simple reason and so I thought okay, lets go ahead and use it. The thing is, at time, everything was magic to me. Things just "worked" sometimes with very little effort (and a lot of video tutorials), so when things didn't function properly I kinda blamed the tool I was using. It was short-sighted of me, but again without self-critique then we'll never learn right? After going through about 3 different Canvas components, I had finally settled on one that was easy to understand and had plenty of documentation to go along with it. But.....my drawings were still disappearing? Its those darn websockets....I just know it. My data is being sent and logged and received by the server and being sent to another client! But....once it reaches the client its not loading properly. Websockets must be the wrong tool for the operation. No, they weren't. My state management just wasn't quite up to the standard that it should have been. 
 
+```
+this.connection.onmessage = (e) => {
+      console.log(e);
+      console.log(e.data);
+      this.setState({
+        drawing: JSON.parse(e.data)
+      });  
+      console.log (this.state.drawing)    
+    }
+  }
+```
+
+Very early on, this is how I handled new data being received over the websocket connection. In my mind, it would work perfectly and well, it did work at a very basic level. However if you went back to my previous code sample, you'll notice that there is a LOT of data being transmitted over the websocket connection (though not all the data came through at each moment of the game). In order to make a cohesive experience, I had to add more variables, more functions, more states, more clear front end components that showed change. The App would never be as simple as one person draws, one other receives, and others respond. Every game has rules, and if those rules aren't laid out clearly then people won't play the game the way it was meant to be in the developers head. Your vision has to match expecations! You have to have a clear flow of data that is representative of every function that you write out, every variable, every state. Every tool that you use has to have a clear purpose and you have to adapt the tool to best suit your needs. That is true for small scale, and large scale projects. 
 
 ## What is it? 
 PicMe is an interactive, multiplayer game which involves challenging players to draw weird, funny and sometimes ridiculous prompts on their personal devices. The drawings are shown live on a host screen, as the player is drawing. Other users are able to view the drawing from the host screen and submit a guess as to what the user is drawing. After 25 seconds, the user that was drawing is shown all the submitted answers. He/she is required to select one that they like best (similar to Cards Against Humanity), which then gives that user a point. This is considered the end of one round of gameplay; the next round then starts with another person drawing a new image.
